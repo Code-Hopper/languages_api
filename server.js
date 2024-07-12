@@ -6,7 +6,7 @@ import { apiRouter } from "./routers/apiRouter.js"
 
 const app = express()
 
-let port = 8800
+let port = 8801
 
 // .use() : to configure any model from different part of the project to the server file
 
