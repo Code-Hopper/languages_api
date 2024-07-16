@@ -1,6 +1,6 @@
 import express from "express"
 
-import { GetHome, GetAbout, GetServices,Get404 } from "../controllers/controller.js"
+import { GetHome, GetAbout, GetServices, Get404 } from "../controllers/controller.js"
 
 let router = express()
 
