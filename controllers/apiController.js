@@ -47,7 +47,7 @@ let GetHello = (req, res) => {
     })
 }
 
-let GetRandomLanguage = (req, res) => {
+let GetRandomLanguage = async (req, res) => {
     // make a random number , filter the number with language ids, return the json data with status 200
 
     try {
@@ -55,17 +55,14 @@ let GetRandomLanguage = (req, res) => {
 
         console.log(randomNumber)
 
-        let [result] = languages.filter((language) => {
-            return language.id === randomNumber
-        })
+        let randomLanguage = await LanguageModel.findOne({ _id: randomNumber })
 
-        if (!result) {
-            throw ("unable to fetch random language !")
+        if (randomLanguage == null) {
+            throw ("unable to get random language")
         }
 
-        console.log(result)
+        res.status(200).json({ message: "You got a random language !", language: randomLanguage })
 
-        res.status(200).json({ message: "You got a random language !", language: result })
     } catch (err) {
         res.status(404).json({ message: err })
     }
@@ -77,65 +74,70 @@ let GetLanguages = (req, res) => {
     res.status(200).json({ collection: languages })
 }
 
-let GetSearchData = (req, res) => {
+let GetSearchData = async (req, res) => {
     // read the query, filter the data, return json
 
     console.log(req.query)
 
     let { scope, level } = req.query
 
-    // console.log(scope)
-    if (scope && !level) {
-        let result = languages.filter((language) => {
+    // to make capitalized text
 
-            let data = language.scope.filter((x) => {
-                return x.toLowerCase() == scope.toLowerCase()
-            })
+    // "word1 word2"
 
-            // we will always get the data (i.e. [] it will counted as true statement  )
+    let makeCapitalizedText = (text) => {
 
-            if (data.length > 0) {
-                return language
+        text = text.replace(text.charAt(0), text.charAt(0).toUpperCase(0))
+
+        text = text.replace(text.charAt(text.indexOf(" ") + 1), text.charAt(text.indexOf(" ") + 1).toUpperCase())
+
+        return text
+    }
+
+    try {
+
+        // console.log(scope)
+        if (scope && !level) {
+
+            scope = makeCapitalizedText(scope)
+
+            let scopeLanguages = await LanguageModel.find({ scope: { $eq: scope } })
+
+            if(scopeLanguages.length == 0 ){
+                throw("invalid search")
             }
 
-        })
-
-        res.status(200).json({ message: `languages based on ${scope} scope !`, result })
+            res.status(200).json({ message: `languages based on ${scope} scope !`, scopeLanguages })
 
 
-    } else if (!scope && level) {
+        } else if (!scope && level) {
 
-        let result = languages.filter((language) => {
-            return language.level.toLowerCase() === level.toLowerCase()
-        })
+            level = makeCapitalizedText(level)
 
-        res.status(200).json({ message: `languages based on ${level} level !`, result })
+            let levelLanguages = await LanguageModel.find({ level: level })
 
-    } else if (scope && level) {
+            res.status(200).json({ message: `languages based on ${level} level !`, levelLanguages })
 
-        let result = languages.filter((language) => {
+        } else if (scope && level) {
 
-            let data = language.scope.filter((x) => {
-                return x.toLowerCase() == scope.toLowerCase()
-            })
+            scope = makeCapitalizedText(scope)
 
-            // we will always get the data (i.e. [] it will counted as true statement  )
+            level = makeCapitalizedText(level)
 
-            if (data.length > 0) {
-                if (language.level.toLowerCase() === level.toLowerCase()) {
-                    return language
-                }
-            }
+            let scopeLevelLanguages = await LanguageModel.find({ level : level , scope : { $eq: scope } })
 
-        })
+            res.status(200).json({ message: `languages based on ${level} level & ${scope} scope !`, scopeLevelLanguages })
 
-        res.status(200).json({ message: `languages based on ${scope} scope & ${level} level !`, result })
+        } else if (!scope && !level) {
+            res.status(401).json({ message: `Invalid search Parameters !` })
+        }
 
-    } else if (!scope && !level) {
-        res.status(401).json({ message: `Invalid search Parameters !` })
+    } catch (err) {
+        console.log("err while fetch the data for filters", err)
+        res.status(500).json({ message: `unable to get data from database !` })
     }
 
 
 }
 
-export { GetHello, GetRandomLanguage, GetLanguages, GetSearchData , readDataFromDatabase }
+export { GetHello, GetRandomLanguage, GetLanguages, GetSearchData, readDataFromDatabase }
