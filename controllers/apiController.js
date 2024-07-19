@@ -10,6 +10,8 @@ let readDataFromDatabase = async (req, res) => {
 
         let result = await LanguageModel.find()
 
+        // db.collection.find()
+
         console.log("we got some data from database")
         console.log(result)
 
@@ -20,31 +22,34 @@ let readDataFromDatabase = async (req, res) => {
 }
 
 
-
 let GetHello = (req, res) => {
     res.status(200).json({
         message: " this is a node.js api app create for testing",
-        whatCanYouDo: {
-            task1: {
+        whatCanYouDo: [
+            {
+                title: "task 1",
                 details: "you can get a random coding language",
                 apiRoute: "/api/random",
                 method: "Get",
                 resultType: "JSON"
             },
-            task2: {
+            {
+                title: "task 2",
                 details: "you can get a scope, level of coding language",
                 apiRoute: "/api/search/",
                 method: "Get",
                 resultType: "JSON"
             },
-            task3: {
+            {
+                title: "task 3",
                 details: "Get All Languages",
                 apiRoute: "/api/languages",
                 method: "Get",
                 resultType: "JSON"
             }
-        }
-    })
+        ]
+    }
+    )
 }
 
 let GetRandomLanguage = async (req, res) => {
@@ -103,8 +108,8 @@ let GetSearchData = async (req, res) => {
 
             let scopeLanguages = await LanguageModel.find({ scope: { $eq: scope } })
 
-            if(scopeLanguages.length == 0 ){
-                throw("invalid search")
+            if (scopeLanguages.length == 0) {
+                throw ("invalid search")
             }
 
             res.status(200).json({ message: `languages based on ${scope} scope !`, scopeLanguages })
@@ -124,7 +129,7 @@ let GetSearchData = async (req, res) => {
 
             level = makeCapitalizedText(level)
 
-            let scopeLevelLanguages = await LanguageModel.find({ level : level , scope : { $eq: scope } })
+            let scopeLevelLanguages = await LanguageModel.find({ level: level, scope: { $eq: scope } })
 
             res.status(200).json({ message: `languages based on ${level} level & ${scope} scope !`, scopeLevelLanguages })
 
